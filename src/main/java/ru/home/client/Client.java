@@ -1,13 +1,15 @@
 package ru.home.client;
 
 import ru.home.service.AppConfig;
+import ru.home.service.Log;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.net.Socket;
-import java.net.UnknownHostException;
+import java.util.Scanner;
 
 public class Client {
-
 
     public static void main(String[] args) {
         AppConfig appConfig = AppConfig.getInstance();
@@ -15,51 +17,46 @@ public class Client {
     }
 
     private static void proxyConnect(AppConfig appConfig) {
+        Scanner scan = new Scanner(System.in);
 
-        // запускаем подключение сокета по известным координатам и инициализируем приём сообщений с консоли клиента
-        try (Socket socket = new Socket(appConfig.getIP(), appConfig.getPort());
-             BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-             DataOutputStream dos = new DataOutputStream(socket.getOutputStream());
-             DataInputStream dis = new DataInputStream(socket.getInputStream());
-        ) {
-            // проверяем живой ли канал и работаем если живой
-            while (!socket.isOutputShutdown()) {
-                // ждём в консоли клиента на предмет появления в ней данных
-                if (br.ready()) {
-                    // данные появились - работаем
-                    String clientCommand = br.readLine();
-                    // пишем данные с консоли в канал сокета для сервера
-                    dos.writeUTF(clientCommand);
-                    dos.flush();
-                    // ждём чтобы сервер успел прочесть сообщение из сокета и ответить
-                    // проверяем условие выхода из соединения
-                    if (clientCommand.equalsIgnoreCase("quit")) {
-                        // если условие выхода достигнуто разъединяемся
-                        // смотрим что нам ответил сервер напоследок перед закрытием ресурсов
-                        printMessage(dis);
-                        // после предварительных приготовлений выходим из цикла записи чтения
-                        break;
-                    }
-                    // если условие разъединения не достигнуто продолжаем работу
-                    // проверяем, что нам ответит сервер на сообщение(за предоставленное ему время в паузе он должен был успеть ответить)
-                    printMessage(dis);
-                }
+        BufferedReader  in = null;
+        PrintWriter out = null;
+        Socket socket = null;
+
+        try {
+            socket = new Socket(appConfig.getIP(), appConfig.getPort());
+            in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            out = new PrintWriter(socket.getOutputStream(), true);
+
+            System.out.println("Введите имя:");
+            out.println(scan.nextLine());
+
+            Resender resend = new Resender(in);
+            resend.start();
+
+            String str = "";
+            while (!str.equals("exit")) {
+                str = scan.nextLine();
+                System.out.println("ddddddd");
+                out.println(str);
             }
-            // на выходе из цикла общения закрываем свои ресурсы
-        } catch (UnknownHostException e) {
+            resend.setStop();
+        } catch (Exception e) {
             e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
+        }
+        finally {
+            close(in, out, socket);
         }
     }
 
-    private static void printMessage(DataInputStream dis) throws IOException {
-        String text = null;
-        if (dis.available() > -1) {
-            do {
-                text = dis.readUTF();
-                System.out.println(text);
-            } while (dis.available() > 0);
+    private static void close(BufferedReader in, PrintWriter out, Socket socket) {
+        Log log = Log.getInstance();
+        try {
+            in.close();
+            out.close();
+            socket.close();
+        } catch (Exception ex) {
+            log.loggingMessage(ex.getMessage());
         }
     }
 
