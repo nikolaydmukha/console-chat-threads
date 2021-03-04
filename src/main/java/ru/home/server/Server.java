@@ -17,26 +17,30 @@ public class Server {
         ServerSocket server = null;
 
         log.loggingMessage("Starting server");
-        while (true) {
-            try{
-                server = new ServerSocket(appConfig.getPort());
+        try {
+            server = new ServerSocket(appConfig.getPort());
+        } catch (IOException exception) {
+            log.loggingMessage(exception.getMessage());
+        }
+
+        try {
+            while (true) {
+
                 //акцептим подключения
                 Socket socket = server.accept();
                 Connection connection = new Connection(socket);
                 connections.add(connection);
                 connection.start();
-
-                log.loggingMessage("Added new connection " + connection.getName());
-            } catch (IOException e) {
-                log.loggingMessage(e.getMessage());
             }
-//            finally {
-//                closeAll(server);
-//            }
+        } catch (IOException ex) {
+            log.loggingMessage(ex.getMessage());
+        } finally {
+            closeAll(server);
         }
+
     }
 
-    private static void closeAll(ServerSocket server) {
+    public static void closeAll(ServerSocket server) {
         Log log = Log.getInstance();
         try {
             server.close();

@@ -30,9 +30,10 @@ public class Connection extends Thread {
     @SneakyThrows
     @Override
     public void run() {
-
         try {
             String name = in.readLine();
+            this.setName(name);
+            log.loggingMessage("Added new connection " + this.getName());
             synchronized (Server.connections) {
                 Iterator<Connection> iter = Server.connections.iterator();
                 while (iter.hasNext()) {
@@ -52,6 +53,7 @@ public class Connection extends Thread {
                     while (iter.hasNext()) {
                         iter.next().out.println(name + ": " + str);
                     }
+                    log.loggingMessage(name + ": " + str);
                 }
             }
         } catch (Exception ex) {
@@ -67,8 +69,8 @@ public class Connection extends Thread {
 
             Server.connections.remove(this);
             if (Server.connections.size() == 0) {
-//                Server.this.closeAll();
-                System.exit(0);
+//                Server.closeAll();
+                System.exit(11);
             }
         } catch (Exception ex) {
             log.loggingMessage(ex.getMessage());

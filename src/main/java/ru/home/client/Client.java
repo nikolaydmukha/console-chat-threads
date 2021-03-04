@@ -18,6 +18,7 @@ public class Client {
 
     private static void proxyConnect(AppConfig appConfig) {
         Scanner scan = new Scanner(System.in);
+        Log log = Log.getInstance();
 
         BufferedReader  in = null;
         PrintWriter out = null;
@@ -37,15 +38,15 @@ public class Client {
             String str = "";
             while (!str.equals("exit")) {
                 str = scan.nextLine();
-                System.out.println("ddddddd");
                 out.println(str);
             }
             resend.setStop();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        finally {
+        } catch (Exception ex) {
+            log.loggingMessage(ex.getMessage());
+        }finally {
+            log.loggingMessage("Close in, out, socket for connection...");
             close(in, out, socket);
+            System.exit(11);
         }
     }
 
@@ -55,6 +56,7 @@ public class Client {
             in.close();
             out.close();
             socket.close();
+            System.exit(11);
         } catch (Exception ex) {
             log.loggingMessage(ex.getMessage());
         }

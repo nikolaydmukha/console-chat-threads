@@ -25,7 +25,6 @@ public class Resender extends Thread {
         try {
             while (!stopped) {
                 String str = in.readLine();
-                System.out.println("sssss");
                 System.out.println(str);
             }
         } catch (IOException ex) {
