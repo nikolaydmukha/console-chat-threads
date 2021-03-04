@@ -1,0 +1,10 @@
+# Project exclude paths
+/target/
+.factorypath
+.classpath
+.project
+.settings/
+target
+.idea
+*.iml
+/bin/
