@@ -9,7 +9,7 @@ public class AppConfig {
     private Properties props = new Properties();
     private static AppConfig instance;
 
-    public AppConfig() {
+    private AppConfig() {
         try (InputStream input = getClass().getClassLoader().getResourceAsStream("app.properties")) {
             props.load(input);
         } catch (IOException ex) {
