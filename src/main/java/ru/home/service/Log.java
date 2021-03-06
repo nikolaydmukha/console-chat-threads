@@ -34,7 +34,6 @@ public class Log {
     private File getLogFile() {
         AppConfig appConfig = AppConfig.getInstance();
         String path = appConfig.getLog();
-
         File f = new File(path);
         return f;
     }
